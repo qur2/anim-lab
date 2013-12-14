@@ -243,15 +243,12 @@ var shaper = {
   ell: function (x, y, scale) { return two.makeEllipse(scale*x+rnd(5), scale*y+rnd(3), scale/2, scale/1.6); }
 }[shape]
 
-// Digit font font 7x5
 
 function rnd(amp, offset) {
   return Math.random() * amp + (offset || 0);
 }
 function grp(items) {
   var g = two.makeGroup.apply(two, items);
-  // g.length = Object.keys(g.children).length;
-  // g.list = shapes;
   shapes = shapes.concat(items);
   return g;
 }
@@ -278,6 +275,7 @@ function randomize(arr) {
   return arr;
 }
 
+// Digit font font 7x5
 function M() {
   var coords = [];
   for (var i=7, ii=1; i>=ii; i--) coords.push([1, i]);
@@ -414,7 +412,7 @@ two.bind('update', function(frameCount) {
   // Effectively 60 times per second.
   var cycle = Math.floor(frameCount/7);
   var l = shapes.length;
-  shapes[(cycle) % l].opacity = .75;
+  shapes[(cycle) % l].opacity = .95;
   shapes[(cycle) % l].scale -= .03;
   shapes[(cycle) % l].fill = '#FF3030';
   shapes[(cycle+1) % l].opacity = .75;
