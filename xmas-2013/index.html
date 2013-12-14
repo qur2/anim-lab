@@ -1,0 +1,419 @@
+<html>
+<head>
+<script src="//cdnjs.cloudflare.com/ajax/libs/two.js/0.3.0/two.min.js"></script>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+.page {
+  background:url(gift-volcano.jpg) no-repeat 50% 50%;
+  text-align:center;
+  height:100%;
+
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  flex-flow: column;
+}
+
+#controls {
+  margin: 2em;
+}
+
+/* http://www.adam-bray.com/blog/86/Simple+CSS+3+buttons/ */
+button {
+  background: url(icon-gift-16x16.png) no-repeat 7px 46%;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+  -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.08);
+  color: #fff;
+  display: inline-block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  padding: 8px 8px 8px 28px;
+  text-decoration: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.075);
+  -webkit-transition: background-color 0.1s linear;
+  -moz-transition: background-color 0.1s linear;
+  -o-transition: background-color 0.1s linear;
+  transition: background-color 0.1s linear; 
+}
+button:hover {
+  cursor: pointer;
+}
+button.info {
+  background: url(icon-info-16x16.png) no-repeat 5px 46%;
+}
+button.pink{
+  background-color: rgb( 207, 56, 91 );
+  border: 1px solid rgb( 187, 40, 74 );
+}
+button.pink:hover {
+  background-color: rgb( 227, 77, 130 );
+}
+
+button.pink:active {
+  background-color: rgb( 187, 40, 74 );
+}
+/* css flip: http://css3playground.com/3d-flip-cards/ */
+.panel {
+  position: relative;
+  -webkit-perspective: 600px;
+  -moz-perspective: 600px;
+  perspective: 600px;
+  width: 750px;
+  height: 255px;
+}
+
+.panel .front, .panel .back {
+  float: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: inherit;
+  height: inherit;
+  text-align: center;
+}
+
+.panel .front {
+  z-index: 900;
+  -webkit-transform: rotateX(0deg) rotateY(0deg);
+  -moz-transform: rotateX(0deg) rotateY(0deg);
+  transform: rotateX(0deg) rotateY(0deg);
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transition: all .4s ease-in-out;
+  transition: all .4s ease-in-out;
+}
+.panel.flip .front {
+  z-index: 900;
+  -webkit-transform: rotateX(180deg);
+  -moz-transform: rotateX(180deg);
+  transform: rotateX(180deg);
+  box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+}
+.panel .back {
+  z-index: 800;
+  -webkit-transform: rotateX(-180deg);
+  -webkit-transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+  -moz-transform: rotateX(-180deg);
+  -moz-transform-style: preserve-3d;
+  -moz-backface-visibility: hidden;
+  transform: rotateX(-180deg);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-transition: all .4s ease-in-out;
+  transition: all .4s ease-in-out;
+}
+.panel.flip .back {
+  z-index: 1000;
+  -webkit-transform: rotateX(0deg) rotateX(0deg);
+  -moz-transform: rotateX(0deg) rotateX(0deg);
+  transform: rotateX(0deg) rotateX(0deg);
+  box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+  background-color: rgba(255, 255, 255, .55);
+}
+
+#credits {
+  color: #333;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 100;
+  font-size: 16px;
+  line-height: 22px;
+  margin: 15px 35px;
+  text-align: left;
+}
+#credits .left {
+  float: left;
+  width: 48%;
+}
+#credits .right {
+  float: right;
+  width: 48%;
+}
+#credits a {
+  color: #994433;
+}
+#credits a:hover {
+  color: #AA5544;
+}
+#credits ul {
+  font-size: .88em;
+  line-height: 1.33em;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div id="card" class="panel hover" ontouchstart="this.classList.toggle('flip');">
+    <div class="front">
+      <!-- front content -->
+      <div id="anim" style="display:inline-block;"></div>
+    </div>
+    <div class="back">
+      <!-- back content -->
+      <div id="credits">
+        <div class="left">
+          <p>Here are the resources used for this Christmas card:</p>
+          <ul>
+            <li><a href="http://vladstudio.deviantart.com/art/Christmas-Volcano-71577568">Christmas Volcano background</a></li>
+            <li><a href="https://www.iconfinder.com/icons/22610/box_christmas_gift_present_icon">Gift Icon</a></li>
+            <li><a href="https://www.iconfinder.com/icons/53599/attention_info_information_icon">Information Icon</a></li>
+          </ul>
+          <p>I do not own nor claim any credit for this material. Upon valid request, I'll gladly remove (part of) it.
+          </p>
+        </div>
+        <div class="right">
+          <p>Here is what I read in order to create this animation:</p>
+          <ul>
+            <li>CSS from <a href="http://css3playground.com/3d-flip-cards/">css3playground</a> for flip cards</li>
+            <li>SVG animation with <a href="http://jonobr1.github.io/two.js/">Two.js</a></li>
+            <li>Inspired from those <a href="http://www.adam-bray.com/blog/86/Simple+CSS+3+buttons/">CSS buttons</a></li>
+          </ul>
+            <p>My personal contribution is under <a href="http://creativecommons.org/licenses/by-sa/4.0/deed.en_US">Creative License</a>. Feel free to play with it, I'd be glad if you can learn something from it.
+            </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="controls">
+    <button class="pink" id="transform-rnd">Randomize!</button>
+    <button class="pink" id="color-rnd">Colors!</button>
+    <button class="pink info" id="credits-toggle">Credits</button>
+  </div>
+</div>
+
+
+<script defer="defer">
+document.getElementById('transform-rnd').onclick = function () {
+  randomize(shapes);
+  document.getElementById('card').classList.remove('flip');
+  two.play();
+};
+document.getElementById('credits-toggle').onclick = function () {
+  document.getElementById('card').classList.toggle('flip');
+  if (two.playing) {
+    two.pause();
+  } else {
+    two.play();
+  }
+};
+document.getElementById('color-rnd').onclick = function () {
+  for (var i=0, ii=shapes.length; i<ii; i++) {
+    var rgb = [Math.round(rnd(100, 155)), Math.round(rnd(100, 155)), Math.round(rnd(100, 155))];
+    shapes[i].fill = 'rgb('+rgb.join(',')+')';
+  }
+  document.getElementById('card').classList.remove('flip');
+  two.play();
+};
+
+var shapes = [];
+var scale = 12;
+
+// Digit font font 7x5
+
+function rnd(amp, offset) {
+  return Math.random() * amp + (offset || 0);
+}
+function grp(items) {
+  var g = two.makeGroup.apply(two, items);
+  // g.length = Object.keys(g.children).length;
+  // g.list = shapes;
+  shapes = shapes.concat(items);
+  return g;
+}
+function mkShape(x, y) {
+  var s;
+  s = two.makeCircle(scale*x+rnd(5), scale*y+rnd(3), scale/1.5);
+  // s = two.makeRectangle(scale*x+rnd(scale/2), scale*y+rnd(scale/2), scale, scale);
+  // s = two.makeEllipse(scale*x+rnd(5), scale*y+rnd(3), scale/2, scale/1.6); s.rotation = Math.random() * 360;
+  s.fill = '#FFFFFF';
+  s.linewidth = 2;
+  s.stroke = '#FF3030';
+  s.opacity = .0;
+  s.noStroke();
+  return s;
+}
+function plot(coords) {
+  var shapes = [];
+  for (var i=0, ii=coords.length; i<ii; i++) {
+    shapes.push(mkShape(coords[i][0], coords[i][1]));
+  }
+  return shapes
+}
+function randomize(arr) {
+  arr.sort(function() {
+    return Math.random() - 0.5;
+  });
+  return arr;
+}
+
+function M() {
+  var coords = [];
+  for (var i=7, ii=1; i>=ii; i--) coords.push([1, i]);
+  coords.push([2, 2]);
+  coords.push([3, 3]);
+  coords.push([3, 4]);
+  coords.push([4, 2]);
+  for (var i=1, ii=8; i<ii; i++) coords.push([5, i]);
+  return grp(plot(coords));
+}
+function E() {
+  var coords = [];
+  for (var i=7, ii=1; i>=ii; i--) coords.push([1, i]);
+  for (var i=2, ii=6; i<ii; i++) coords.push([i, 1]);
+  for (var i=2, ii=6; i<ii; i++) coords.push([i, 4]);
+  for (var i=2, ii=6; i<ii; i++) coords.push([i, 7]);
+  return grp(plot(coords));
+}
+function R() {
+  var coords = [];
+  for (var i=7, ii=1; i>ii; i--) coords.push([1, i]);
+  for (var i=1, ii=5; i<ii; i++) coords.push([i, 1]);
+  coords.push([5, 2]);
+  coords.push([5, 3]);
+  for (var i=4, ii=2; i>=ii; i--) coords.push([i, 4]);
+  coords.push([3, 5]);
+  coords.push([4, 6]);
+  coords.push([5, 7]);
+  return grp(plot(coords));
+}
+function Y() {
+  var coords = [];
+  for (var i=7, ii=3; i>ii; i--) coords.push([3, i]);
+  coords.push([2, 3]);
+  coords.push([1, 2]);
+  coords.push([1, 1]);
+  coords.push([4, 3]);
+  coords.push([5, 2]);
+  coords.push([5, 1]);
+  return grp(plot(coords));
+}
+function C() {
+  var coords = [];
+  for (var i=5, ii=2; i>=ii; i--) coords.push([i, 1]);
+  for (var i=2, ii=6; i<=ii; i++) coords.push([1, i]);
+  for (var i=2, ii=5; i<=ii; i++) coords.push([i, 7]);
+  return grp(plot(coords));
+}
+function H() {
+  var coords = [];
+  for (var i=7, ii=1; i>=ii; i--) coords.push([1, i]);
+  for (var i=2, ii=4; i<=ii; i++) coords.push([i, 4]);
+  for (var i=1, ii=7; i<=ii; i++) coords.push([5, i]);
+  return grp(plot(coords));
+}
+function I() {
+  var coords = [];
+  for (var i=7, ii=1; i>=ii; i--) coords.push([1, i]);
+  return grp(plot(coords));
+}
+function S() {
+  var coords = [];
+  coords.push([1, 6]);
+  coords.push([2, 7]);
+  coords.push([3, 7]);
+  coords.push([4, 7]);
+  coords.push([5, 6]);
+  coords.push([5, 5]);
+  coords.push([4, 4]);
+  coords.push([3, 4]);
+  coords.push([2, 4]);
+  coords.push([1, 3]);
+  coords.push([1, 2]);
+  coords.push([2, 1]);
+  coords.push([3, 1]);
+  coords.push([4, 1]);
+  return grp(plot(coords));
+}
+function T() {
+  var coords = [];
+  for (var i=1, ii=5; i<=ii; i++) coords.push([i, 1]);
+  for (var i=2, ii=7; i<=ii; i++) coords.push([3, i]);
+  return grp(plot(coords));
+}
+function A() {
+  var coords = [];
+  for (var i=7, ii=3; i>=ii; i--) coords.push([1, i]);
+  coords.push([2, 2]);
+  coords.push([3, 1]);
+  coords.push([4, 2]);
+  coords.push([5, 3]);
+  for (var i=4, ii=2; i>=ii; i--) coords.push([i, 4]);
+  for (var i=4, ii=7; i<=ii; i++) coords.push([5, i]);
+  return grp(plot(coords));
+}
+
+// Make an instance of two and place it on the page.
+var elem = document.getElementById('anim');
+var params = { width: 50*scale, height: 17*scale };
+var two = new Two(params).appendTo(elem);
+var m1 = M(),
+  e = E(),
+  r1 = R(),
+  r2 = R(),
+  y = Y(),
+  c = C(),
+  h = H(),
+  r3 = R(),
+  i = I(),
+  s1 = S(),
+  t = T(),
+  m2 = M(),
+  a = A(),
+  s2 = S();
+var offX = scale * 10;
+var offY = scale * 8;
+m1.translation.set(offX+0, 0);
+e.translation.set(offX+6*scale, 0);
+r1.translation.set(offX+12*scale, 0);
+r2.translation.set(offX+18*scale, 0);
+y.translation.set(offX+24*scale, 0);
+c.translation.set(0, offY);
+h.translation.set(6*scale, offY);
+r3.translation.set(12*scale, offY);
+i.translation.set(18*scale, offY);
+s1.translation.set(20*scale, offY);
+t.translation.set(25*scale, offY);
+m2.translation.set(31*scale, offY);
+a.translation.set(37*scale, offY);
+s2.translation.set(43*scale, offY);
+
+two.bind('update', function(frameCount) {
+  // This code is called everytime two.update() is called.
+  // Effectively 60 times per second.
+  var cycle = Math.floor(frameCount/7);
+  var l = shapes.length;
+  shapes[(cycle) % l].opacity = .75;
+  shapes[(cycle) % l].scale -= .03;
+  shapes[(cycle) % l].fill = '#FF3030';
+  shapes[(cycle+1) % l].opacity = .75;
+  shapes[(cycle+1) % l].scale -= .02;
+  shapes[(cycle+1) % l].fill = '#FF6060';
+  shapes[(cycle+2) % l].opacity = .75;
+  shapes[(cycle+2) % l].scale -= .01;
+  shapes[(cycle+2) % l].fill = '#FF9090';
+  shapes[(cycle+3) % l].opacity = .75;
+  shapes[(cycle+3) % l].scale += .01;
+  shapes[(cycle+3) % l].fill = '#FF8080';
+  shapes[(cycle+4) % l].opacity = .75;
+  shapes[(cycle+4) % l].scale += .05;
+  shapes[(cycle+4) % l].fill = '#FF5050';
+}).play();
+</script>
+</body>
+</html>
