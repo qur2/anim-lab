@@ -213,10 +213,15 @@ document.getElementById('credits-toggle').onclick = function () {
   }
 };
 document.getElementById('color-rnd').onclick = function () {
-  for (var i=0, ii=shapes.length; i<ii; i++) {
-    var rgb = [Math.round(rnd(100, 155)), Math.round(rnd(100, 155)), Math.round(rnd(100, 155))];
-    shapes[i].fill = 'rgb('+rgb.join(',')+')';
-  }
+  _.each(two.scene.children, function (c) {
+    var r = Math.round(rnd(100, 155)),
+      g = Math.round(rnd(100, 155)),
+      b = Math.round(rnd(100, 155));
+    if (r + g + b < 600) {
+      r = 255;
+    }
+    c.fill = 'rgb('+r+','+g+','+b+')';
+  });
   document.getElementById('card').classList.remove('flip');
   two.play();
 };
