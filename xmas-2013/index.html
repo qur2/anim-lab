@@ -228,6 +228,20 @@ document.getElementById('color-rnd').onclick = function () {
 
 var shapes = [];
 var scale = 12;
+var shape = String(window.location).split('shape=');
+if (shape.length > 1) {
+  shape = shape[1];
+  if (_.indexOf(['circ', 'rect', 'ell'], shape) == -1) {
+    shape = 'circ';
+  }
+} else {
+  shape = 'circ';
+}
+var shaper = {
+  circ: function (x, y, scale) { return two.makeCircle(scale*x+rnd(5), scale*y+rnd(3), scale/1.5); },
+  rect: function (x, y, scale) { return two.makeRectangle(scale*x+rnd(scale/2), scale*y+rnd(scale/2), scale, scale); },
+  ell: function (x, y, scale) { return two.makeEllipse(scale*x+rnd(5), scale*y+rnd(3), scale/2, scale/1.6); }
+}[shape]
 
 // Digit font font 7x5
 
@@ -242,10 +256,7 @@ function grp(items) {
   return g;
 }
 function mkShape(x, y) {
-  var s;
-  s = two.makeCircle(scale*x+rnd(5), scale*y+rnd(3), scale/1.5);
-  // s = two.makeRectangle(scale*x+rnd(scale/2), scale*y+rnd(scale/2), scale, scale);
-  // s = two.makeEllipse(scale*x+rnd(5), scale*y+rnd(3), scale/2, scale/1.6); s.rotation = Math.random() * 360;
+  var s = shaper(x, y, scale);
   s.fill = '#FFFFFF';
   s.linewidth = 2;
   s.stroke = '#FF3030';
