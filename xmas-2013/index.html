@@ -200,7 +200,7 @@ button.pink:active {
 
 <script defer="defer">
 document.getElementById('transform-rnd').onclick = function () {
-  randomize(shapes);
+  shuffle(shapes);
   document.getElementById('card').classList.remove('flip');
   two.play();
 };
@@ -214,13 +214,7 @@ document.getElementById('credits-toggle').onclick = function () {
 };
 document.getElementById('color-rnd').onclick = function () {
   _.each(two.scene.children, function (c) {
-    var r = Math.round(rnd(100, 155)),
-      g = Math.round(rnd(100, 155)),
-      b = Math.round(rnd(100, 155));
-    if (r + g + b < 600) {
-      r = 255;
-    }
-    c.fill = 'rgb('+r+','+g+','+b+')';
+    c.fill = randColor();
   });
   document.getElementById('card').classList.remove('flip');
   two.play();
@@ -238,41 +232,82 @@ if (shape.length > 1) {
   shape = 'circ';
 }
 var shaper = {
-  circ: function (x, y, scale) { return two.makeCircle(scale*x+rnd(5), scale*y+rnd(3), scale/1.5); },
-  rect: function (x, y, scale) { return two.makeRectangle(scale*x+rnd(scale/2), scale*y+rnd(scale/2), scale, scale); },
-  ell: function (x, y, scale) { return two.makeEllipse(scale*x+rnd(5), scale*y+rnd(3), scale/2, scale/1.6); }
+  circ: function (x, y, scale) { return two.makeCircle(scale*x+rand(5), scale*y+rand(3), scale/1.5); },
+  rect: function (x, y, scale) { return two.makeRectangle(scale*x+rand(scale/2), scale*y+rand(scale/2), scale, scale); },
+  ell: function (x, y, scale) { return two.makeEllipse(scale*x+rand(5), scale*y+rand(3), scale/2, scale/1.6); }
 }[shape]
 
+// Lightens a string color by the given amount.
+// Handles hex, rgb and rgba strings.
+function lighten(color, amount) {
+  function _lighten(amount, rgb) {
+    rgb[0] = Math.min(Math.round(rgb[0] + amount), 255);
+    rgb[1] = Math.min(Math.round(rgb[1] + amount), 255);
+    rgb[2] = Math.min(Math.round(rgb[2] + amount), 255);
+    return rgb;
+  }
+  var r, g, b, light;
+  if ('#' === color[0]) {
+    r = parseInt(color.slice(1, 3), 16);
+    g = parseInt(color.slice(3, 5), 16);
+    b = parseInt(color.slice(5, 7), 16);
+    light = _lighten(amount, [r, g, b]);
+    return '#'+light[0].toString(16)+light[1].toString(16)+light[2].toString(16)
+  } else {
+    var pre = 'a' === color[3] ? 5 : 4;
+    var args = color.slice(pre, -1).split(',');
+    args[0] = parseInt(args[0]);
+    args[1] = parseInt(args[1]);
+    args[2] = parseInt(args[2]);
+    light = _lighten.call(this, amount, args);
+    return color.slice(0, pre)+args.join(',')+')';
+  }
+}
 
-function rnd(amp, offset) {
+// Helper function to generate a random number.
+function rand(amp, offset) {
   return Math.random() * amp + (offset || 0);
 }
-function grp(items) {
-  var g = two.makeGroup.apply(two, items);
-  shapes = shapes.concat(items);
-  return g;
-}
-function mkShape(x, y) {
-  var s = shaper(x, y, scale);
-  s.fill = '#FFFFFF';
-  s.linewidth = 2;
-  s.stroke = '#FF3030';
-  s.opacity = .0;
-  s.noStroke();
-  return s;
-}
-function plot(coords) {
-  var shapes = [];
-  for (var i=0, ii=coords.length; i<ii; i++) {
-    shapes.push(mkShape(coords[i][0], coords[i][1]));
+// Helper function to generate a pastel color, never grey.
+function randColor() {
+  var col = [Math.round(rand(100, 155))];
+  col[1] = 255 - col[0];
+  col[2] = 255 - Math.round(col[0] / 2);
+  if (col[0] + col[1] + col[2] < 600) {
+    col[1] = 255;
   }
-  return shapes
+  shuffle(col);
+  return 'rgb('+col[0]+','+col[1]+','+col[2]+')';
 }
-function randomize(arr) {
+// Helper function to shuffle an array elements.
+function shuffle(arr) {
   arr.sort(function() {
     return Math.random() - 0.5;
   });
   return arr;
+}
+
+// Creates a group of dots with initial parameters.
+function group(dots) {
+  var g = two.makeGroup.apply(two, dots);
+  g.fill = '#FF3030';
+  g.opacity = .0;
+  shapes = shapes.concat(dots);
+  return g;
+}
+// Builds a dot, which is the drawing element unit.
+function dot(x, y) {
+  var s = shaper(x, y, scale);
+  s.noStroke();
+  return s;
+}
+// Given an array of coordinates, returns an array of dots.
+function plot(coords) {
+  var dots = [];
+  for (var i=0, ii=coords.length; i<ii; i++) {
+    dots.push(dot(coords[i][0], coords[i][1]));
+  }
+  return dots
 }
 
 // Digit font font 7x5
@@ -284,7 +319,7 @@ function M() {
   coords.push([3, 4]);
   coords.push([4, 2]);
   for (var i=1, ii=8; i<ii; i++) coords.push([5, i]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function E() {
   var coords = [];
@@ -292,7 +327,7 @@ function E() {
   for (var i=2, ii=6; i<ii; i++) coords.push([i, 1]);
   for (var i=2, ii=6; i<ii; i++) coords.push([i, 4]);
   for (var i=2, ii=6; i<ii; i++) coords.push([i, 7]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function R() {
   var coords = [];
@@ -304,7 +339,7 @@ function R() {
   coords.push([3, 5]);
   coords.push([4, 6]);
   coords.push([5, 7]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function Y() {
   var coords = [];
@@ -315,26 +350,26 @@ function Y() {
   coords.push([4, 3]);
   coords.push([5, 2]);
   coords.push([5, 1]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function C() {
   var coords = [];
   for (var i=5, ii=2; i>=ii; i--) coords.push([i, 1]);
   for (var i=2, ii=6; i<=ii; i++) coords.push([1, i]);
   for (var i=2, ii=5; i<=ii; i++) coords.push([i, 7]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function H() {
   var coords = [];
   for (var i=7, ii=1; i>=ii; i--) coords.push([1, i]);
   for (var i=2, ii=4; i<=ii; i++) coords.push([i, 4]);
   for (var i=1, ii=7; i<=ii; i++) coords.push([5, i]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function I() {
   var coords = [];
   for (var i=7, ii=1; i>=ii; i--) coords.push([1, i]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function S() {
   var coords = [];
@@ -352,13 +387,13 @@ function S() {
   coords.push([2, 1]);
   coords.push([3, 1]);
   coords.push([4, 1]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function T() {
   var coords = [];
   for (var i=1, ii=5; i<=ii; i++) coords.push([i, 1]);
   for (var i=2, ii=7; i<=ii; i++) coords.push([3, i]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 function A() {
   var coords = [];
@@ -369,7 +404,7 @@ function A() {
   coords.push([5, 3]);
   for (var i=4, ii=2; i>=ii; i--) coords.push([i, 4]);
   for (var i=4, ii=7; i<=ii; i++) coords.push([5, i]);
-  return grp(plot(coords));
+  return group(plot(coords));
 }
 
 // Make an instance of two and place it on the page.
@@ -407,26 +442,25 @@ m2.translation.set(31*scale, offY);
 a.translation.set(37*scale, offY);
 s2.translation.set(43*scale, offY);
 
+// Updates dot properties: fill color, opacity and scale.
+// To handle the dot fill color, it relies on the group's color.
+// This way, the color can be nicely ligthened and restored afterwards.
+function updateDots(shape, f, o, s) {
+  shape.fill = lighten(shape.parent.fill, f);
+  shape.opacity = o;
+  shape.scale += s;
+}
+
 two.bind('update', function(frameCount) {
   // This code is called everytime two.update() is called.
   // Effectively 60 times per second.
   var cycle = Math.floor(frameCount/7);
   var l = shapes.length;
-  shapes[(cycle) % l].opacity = .95;
-  shapes[(cycle) % l].scale -= .03;
-  shapes[(cycle) % l].fill = '#FF3030';
-  shapes[(cycle+1) % l].opacity = .75;
-  shapes[(cycle+1) % l].scale -= .02;
-  shapes[(cycle+1) % l].fill = '#FF6060';
-  shapes[(cycle+2) % l].opacity = .75;
-  shapes[(cycle+2) % l].scale -= .01;
-  shapes[(cycle+2) % l].fill = '#FF9090';
-  shapes[(cycle+3) % l].opacity = .75;
-  shapes[(cycle+3) % l].scale += .01;
-  shapes[(cycle+3) % l].fill = '#FF8080';
-  shapes[(cycle+4) % l].opacity = .75;
-  shapes[(cycle+4) % l].scale += .05;
-  shapes[(cycle+4) % l].fill = '#FF5050';
+  updateDots(shapes[(cycle    ) % l], 0, .95, -0.06);
+  updateDots(shapes[(cycle + 1) % l], 5, .75, -0.03);
+  updateDots(shapes[(cycle + 2) % l], 15, .75, +0.01);
+  updateDots(shapes[(cycle + 3) % l], 35, .75, +0.02);
+  updateDots(shapes[(cycle + 4) % l], 55, .75, +0.06);
 }).play();
 </script>
 </body>
