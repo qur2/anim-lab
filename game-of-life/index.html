@@ -1,0 +1,162 @@
+<html>
+<head>
+<script src="//cdnjs.cloudflare.com/ajax/libs/two.js/0.3.0/two.min.js"></script>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+.page {
+  background-color:#ccc;
+  text-align:center;
+  height:100%;
+
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  flex-flow: column;
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div id="anim"></div>
+</div>
+<script>
+function World(cellCount, proximity, age) {
+	var cells = [];
+	// connectivity map: keys are cell indexes and
+	// values are adjacent cells indexes.
+	var connections = {};
+
+	var i, ii;
+	// populate the cell list with dead cells
+	for (i=0, ii=cellCount; i<ii; i++) {
+		cells.push(0);
+	}
+	// build the connectivity map, using the provided
+	// proximity function.
+	for (i=0, ii=cells.length; i<ii; i++) {
+		connections[i] = proximity(i);
+	}
+	// next generation of cells
+	this.fcells = cells.slice(0);
+	this.cells = cells;
+	this.connections = connections;
+	this.proximity = proximity;
+	this.age = age;
+}
+World.prototype.tick = function () {
+	var cells = this.cells;
+	for (i=0, ii=cells.length; i<ii; i++) {
+		this.fcells[i] = this.age(cells[i], this.connections[i].map(function (i) {
+			return cells[i];
+		}));
+	}
+	cells = this.fcells.slice(0);
+	this.cells = cells;
+	this.trigger('tick', { 'cells': cells });
+}
+_.extend(World.prototype, Backbone.Events);
+
+function BinaryEvolution() {}
+BinaryEvolution.prototype.age = function (cell, neighbors) {
+	var alive = neighbors.filter(function (n) { return Boolean(n); });
+	if (alive.length == 2 && cell) return 1
+	if (alive.length == 3) return 1;
+	return 0;
+}
+BinaryEvolution.prototype.mutate = function (cell) {
+	return !cell;
+}
+
+function RectGeom(grid, rows, cols) {
+	this.grid = grid;
+	this.rows = rows;
+	this.cols = cols;
+	var w = grid.width / cols;
+	var h = grid.height / rows;
+	for (i=0; i<cols; i++) {
+		for (j=0; j<rows; j++) {
+			r = two.makeRectangle(i*w, j*h, w, h);
+			r.fill = 'black';
+			r.noStroke();
+		}
+	}
+}
+RectGeom.prototype.torus = function (i, j) {
+	return ((i+this.cols) % this.cols) * this.cols + ((j+this.rows) % this.rows);
+}
+RectGeom.prototype.proximity = function (cell) {
+	var i, j, k, l, neighbors;
+	i = Math.floor(cell / this.rows);
+	j = cell % this.cols;
+	neighbors = [];
+	for (k=-1; k<=1; k++) {
+		neighbors.push(this.torus(i-1, j+k));
+	}
+	neighbors.push(this.torus(i, j-1));
+	neighbors.push(this.torus(i, j+1));
+	for (k=-1; k<=1; k++) {
+		neighbors.push(this.torus(i+1, j+k));
+	}
+	return neighbors.sort();
+}
+RectGeom.prototype.update = function (cells) {
+	for (var i=0, ii=cells.length; i<ii; i++) {
+		this.grid.scene.children[i+1].fill = cells[i] ? '#000' : '#FFF';
+	}
+	console.log('update');
+	this.grid.update();
+}
+function Game(two, rows, cols, geometry, time) {
+	this.two = two;
+	var width = two.width;
+	var height = two.height;
+
+	var geom = new geometry(two, rows, cols);
+	var t = new time();
+	var world = new World(rows*cols, _.bind(geom.proximity, geom), _.bind(t.age, t));
+	this.speed = 500;
+	this.timer;
+
+	world.on('tick', function (e) {
+		geom.update(e.cells);
+	});
+	two.renderer.domElement.addEventListener('click', function(e) {
+		var cell = e.target.id.split('-').pop();
+		world.cells[cell] = t.mutate(world.cells[cell]);
+		geom.update(world.cells);
+	});
+
+	this.geom = geom;
+	this.world = world;
+}
+Game.prototype.start = function () {
+	var world = this.world;
+	this.timer = setInterval(function() {
+		world.tick();
+	}, this.speed);
+}
+Game.prototype.pause = function () {
+	clearInterval(this.timer);
+	this.timer = null;
+}
+
+var pxWidth = 400,
+	pxHeight = 400;
+var width = 40,
+	height = 40;
+var elem = document.getElementById('anim');
+var two = new Two({ width: pxWidth, height: pxHeight }).appendTo(elem);
+var g = new Game(two, width, height, RectGeom, BinaryEvolution);
+</script>
+</body>
+</html>
