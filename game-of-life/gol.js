@@ -89,6 +89,56 @@ RectGeom.prototype.update = function (cells, from, to) {
 	}
 	this.grid.update();
 };
+
+function HexGeom(grid, rows, cols) {
+	this.grid = grid;
+	this.rows = rows;
+	this.cols = cols;
+	var w = grid.width / (cols+1) / Math.sqrt(3);
+	var h = grid.height / rows;
+	for (i=0; i<rows; i++) {
+		for (j=0; j<cols; j++) {
+			r = this.polygon(w);
+			r.translation.set(((j+0.5)+(i%2)*0.5)*(Math.sqrt(3)*w), i*(3/4*w*2)+w);
+			r.fill = 'black';
+			r.noStroke();
+		}
+	}
+}
+HexGeom.prototype.polygon = function (radius) {
+	var angle, hex = [];
+	for (var i=0; i<6; i++) {
+		angle = 2 * Math.PI / 6 * (i+0.5);
+		hex.push(radius * Math.cos(angle), radius * Math.sin(angle));
+	}
+	return two.makePolygon.apply(two, hex);
+};
+HexGeom.prototype.torus = function (i, j) {
+	return ((i+this.cols) % this.cols) * this.cols + ((j+this.rows) % this.rows);
+};
+HexGeom.prototype.proximity = function (cell) {
+	var i, j, neighbors;
+	i = Math.floor(cell / this.rows);
+	j = cell % this.cols;
+	neighbors = [];
+	neighbors.push(
+		this.torus(i-1, j-1 + (i&1)),
+		this.torus(i-1, j + (i&1)),
+		this.torus(i, j-1),
+		this.torus(i, j+1),
+		this.torus(i+1, j-1 + (i&1)),
+		this.torus(i+1, j + (i&1))
+	);
+	return neighbors.sort(function (a, b) { return a - b; });
+};
+HexGeom.prototype.update = function (cells, from, to) {
+	if (typeof from == 'undefined') from = 0;
+	if (typeof to == 'undefined') to = cells.length;
+	for (var i=from; i<to; i++) {
+		this.grid.scene.children[i+1].fill = cells[i] ? '#000' : '#FFF';
+	}
+	this.grid.update();
+};
 // function Topology(geometry) {
 // 	this.geometry = geometry;
 // }
