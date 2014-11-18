@@ -1,0 +1,41 @@
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+.page {
+  background-color:#ccc;
+  text-align:center;
+  height:100%;
+
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  flex-flow: column;
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div id="anim"></div>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/two.js/0.3.0/two.min.js"></script>
+<script src="gol.js"></script>
+<script>
+var pxWidth = 400,
+	pxHeight = 400;
+var elem = document.getElementById('anim');
+var two = new Two({ width: pxWidth, height: pxHeight }).appendTo(elem);
+var g = new Game(two, 20, 20, HexGeom, BinaryEvolution);
+</script>
+</body>
+</html>
