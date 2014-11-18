@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>GETTING STARTED WITH BRACKETS</title>
+        <meta name="description" content="And the dog has risen again!">
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <section>
+            <canvas id="canvas-dest"></canvas>
+        </section>
+
+        <script>
+            // Fisher–Yates shuffle
+            // http://bost.ocks.org/mike/shuffle/
+            function shuffle(array) {
+              var m = array.length, t, i;
+
+              // While there remain elements to shuffle…
+              while (m) {
+
+                // Pick a remaining element…
+                i = Math.floor(Math.random() * m--);
+
+                // And swap it with the current element.
+                t = array[m];
+                array[m] = array[i];
+                array[i] = t;
+              }
+
+              return array;
+            }
+
+            function range(a, z) {
+                if (z === undefined) {
+                    z = a;
+                    a = 0;
+                }
+                var i, r = [];
+                for (i = a; i < z; r.push(i), i++);
+                return r;
+            }
+
+            function _sort(m, l) {
+                var tmp, more = false;
+                for (var i = 0, ii = m.length; i < ii; i++) {
+                    // if i'm bigger than the element under me
+                    if (m[i] > m[i+l]) {
+                        // if i should be on a row bigger than the one i'm on currently
+                        if (Math.floor(m[i]/l) > Math.floor(i/l)) {
+                            tmp = m[i];
+                            m[i] = m[i+l];
+                            m[i+l] = tmp;
+                            more = true;
+                        // if i belong to the row i'm on currently
+                        } else {
+                            tmp = m[i+l];
+                            m.splice(i+l, 1);
+                            m.splice(i, 0, tmp);
+                        }
+                    }
+                    // if i'm bigger than the element right to me
+                    else if (m[i] > m[i+1]) {
+                        tmp = m[i];
+                        m[i] = m[i+1];
+                        m[i+1] = tmp;
+                        more = true;
+                    }
+                }
+                return more;
+            }
+
+            function updateImgData(src, dest, pixorder) {
+                for (var i = pixorder.length-1; i >= 0; i--) {
+                    dest.data[i*4] = src.data[pixorder[i]*4];
+                    dest.data[i*4+1] = src.data[pixorder[i]*4+1];
+                    dest.data[i*4+2] = src.data[pixorder[i]*4+2];
+                    dest.data[i*4+3] = src.data[pixorder[i]*4+3];
+                }
+                return dest;
+            }
+        </script>
+
+        <script>
+            var canvas = document.getElementById('canvas-dest');
+            var ctx = canvas.getContext('2d');
+            var img = new Image();
+            var imgdata, imgdata2, pixorder;
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+                imgdata = ctx.getImageData(0, 0, img.width, img.height);
+                imgdata2 = ctx.getImageData(0, 0, img.width, img.height);
+                pixorder = shuffle(range(img.width * img.height));
+                ctx.clearRect(0, 0, img.width, img.height);
+                interval = setInterval(function () {
+                    _sort(pixorder, img.width);
+                    updateImgData(imgdata, imgdata2, pixorder);
+                    ctx.putImageData(imgdata2, 0, 0);
+                }, 150);
+            }
+            img.src = 'dog.jpg';
+        </script>
+
+    </body>
+</html>

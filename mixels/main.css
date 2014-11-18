@@ -1,0 +1,9 @@
+/* http://www.w3.org/Style/Examples/007/center.en.html#hv3 */
+section {
+    display: block;
+    padding: 1em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+}
