@@ -1,0 +1,139 @@
+<html>
+<head>
+    <title>glitch_r</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <section>
+        <input type="file" onchange="loadFile.call(this, '#img-prvw')">
+        <button name="iter-more" id="iter-more" onclick="glitch.call(this, '#img-prvw', 20)">Glitch!</button>
+        <hr />
+        <img id="img-prvw" src="" height="200" alt="Please load an image...">
+    </section>
+
+    <script>
+        var _glitch = {};
+        function loadFile(previewDest) {
+            var preview = document.querySelector(previewDest);
+            var file = this.files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+                // update preview
+                preview.src = reader.result;
+                // setup the _glitch context
+                _glitch = setupGlitchContext(reader.result);
+            }
+
+            _glitch = {};
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+            }
+        }
+        
+        function setupGlitchContext(dataUrl) {
+            var g = {};
+            g.originalImage = document.createElement('img');
+            g.originalImage.src = dataUrl;
+            var canvas = document.createElement('canvas');
+            canvas.width = g.originalImage.width;
+            canvas.height = g.originalImage.height;
+            // remember the original image data
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(g.originalImage, 0, 0, canvas.width, canvas.height);
+            g.originalCanvas = canvas;
+            g.originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            g.workingImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            g.pixOrder = shuffle(range(canvas.width * canvas.height));
+            return g;
+        }
+
+        function glitch(previewDest, iterCount) {
+            var preview = document.querySelector(previewDest);
+            if (!_glitch.originalImageData) {
+                return false;
+            }
+            while(iterCount--) {
+                _sort(_glitch.pixOrder, _glitch.originalImage.width);
+            }
+            updateImgData(_glitch.originalImageData, _glitch.workingImageData, _glitch.pixOrder);
+            var ctx = _glitch.originalCanvas.getContext('2d');
+            ctx.putImageData(_glitch.workingImageData, 0, 0);
+            preview.src = _glitch.originalCanvas.toDataURL();
+        }
+    </script>
+    
+    <script>
+        // Fisher–Yates shuffle
+        // http://bost.ocks.org/mike/shuffle/
+        function shuffle(array) {
+            var m = array.length, t, i;
+
+            // While there remain elements to shuffle…
+            while (m) {
+
+                // Pick a remaining element…
+                i = Math.floor(Math.random() * m--);
+
+                // And swap it with the current element.
+                t = array[m];
+                array[m] = array[i];
+                array[i] = t;
+            }
+
+            return array;
+        }
+
+        function range(a, z) {
+            if (z === undefined) {
+                z = a;
+                a = 0;
+            }
+            var i, r = [];
+            for (i = a; i < z; r.push(i), i++);
+            return r;
+        }
+
+        function _sort(m, l) {
+            var tmp, more = false;
+            for (var i = 0, ii = m.length; i < ii; i++) {
+                // if i'm bigger than the element under me
+                if (m[i] > m[i+l]) {
+                    // if i should be on a row bigger than the one i'm on currently
+                    if (Math.floor(m[i]/l) > Math.floor(i/l)) {
+                        tmp = m[i];
+                        m[i] = m[i+l];
+                        m[i+l] = tmp;
+                        more = true;
+                    // if i belong to the row i'm on currently
+//                    } else {
+//                        tmp = m[i+l];
+//                        m.splice(i+l, 1);
+//                        m.splice(i, 0, tmp);
+                    }
+                }
+                // if i'm bigger than the element right to me
+                else if (m[i] > m[i+1]) {
+                    tmp = m[i];
+                    m[i] = m[i+1];
+                    m[i+1] = tmp;
+                    more = true;
+                }
+            }
+            return more;
+        }
+
+        function updateImgData(src, dest, pixorder) {
+            for (var i = pixorder.length-1; i >= 0; i--) {
+                dest.data[i*4] = src.data[pixorder[i]*4];
+                dest.data[i*4+1] = src.data[pixorder[i]*4+1];
+                dest.data[i*4+2] = src.data[pixorder[i]*4+2];
+                dest.data[i*4+3] = src.data[pixorder[i]*4+3];
+            }
+            return dest;
+        }
+    </script>
+</body>
+</html>
