@@ -6,6 +6,8 @@
 <body>
     <section>
         <input type="file" onchange="loadFile.call(this, '#img-prvw')">
+        <button name="mix-init" onclick="mix.call(this, '#img-prvw', 'random')">Random mix</button>
+        <button name="mix-init" onclick="mix.call(this, '#img-prvw', 'color')">Color mix</button>
         <button name="iter-more" id="iter-more" onclick="glitch.call(this, '#img-prvw', 20)">Glitch!</button>
         <hr />
         <img id="img-prvw" src="" height="200" alt="Please load an image...">
@@ -18,21 +20,21 @@
             var file = this.files[0];
             var reader = new FileReader();
 
-            reader.onloadend = function () {
+            reader.onloadend = function() {
                 // update preview
                 preview.src = reader.result;
                 // setup the _glitch context
                 _glitch = setupGlitchContext(reader.result);
-            }
+            };
 
             _glitch = {};
             if (file) {
                 reader.readAsDataURL(file);
             } else {
-                preview.src = "";
+                preview.src = '';
             }
         }
-        
+
         function setupGlitchContext(dataUrl) {
             var g = {};
             g.originalImage = document.createElement('img');
@@ -46,8 +48,28 @@
             g.originalCanvas = canvas;
             g.originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             g.workingImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            g.pixOrder = shuffle(range(canvas.width * canvas.height));
             return g;
+        }
+
+        function mix(previewDest, mixMode) {
+            var preview = document.querySelector(previewDest);
+            if (!_glitch.originalImageData) {
+                return false;
+            }
+            if (mixMode == 'random') {
+                _glitch.pixOrder = shuffle(range(_glitch.originalImageData.data.length / 4));
+            } else {
+                _glitch.pixOrder = getPixSorter(_glitch.originalImageData, function(r, g, b, a) {
+                    // return r*.5 + g*.33 + b*.27
+                    // return r >> 16 + g >> 8 + b;
+                    // return Math.pow((55 - r), 2) + Math.pow(255 - g, 2) + Math.pow(5 - b, 2);
+                    return Math.pow((255 ^ r), 2) + Math.pow(255 ^ g, 2) + Math.pow(255 ^ b, 2);
+                }).sort();
+            }
+            updateImgData(_glitch.originalImageData, _glitch.workingImageData, _glitch.pixOrder);
+            var ctx = _glitch.originalCanvas.getContext('2d');
+            ctx.putImageData(_glitch.workingImageData, 0, 0);
+            preview.src = _glitch.originalCanvas.toDataURL();
         }
 
         function glitch(previewDest, iterCount) {
@@ -55,7 +77,7 @@
             if (!_glitch.originalImageData) {
                 return false;
             }
-            while(iterCount--) {
+            while (iterCount--) {
                 _sort(_glitch.pixOrder, _glitch.originalImage.width);
             }
             updateImgData(_glitch.originalImageData, _glitch.workingImageData, _glitch.pixOrder);
@@ -64,7 +86,7 @@
             preview.src = _glitch.originalCanvas.toDataURL();
         }
     </script>
-    
+
     <script>
         // Fisher–Yates shuffle
         // http://bost.ocks.org/mike/shuffle/
@@ -96,29 +118,53 @@
             return r;
         }
 
+        function getPixSorter(imageData, pixelFunc) {
+            // using Uint32Array means that mx pixel count allowed is:
+            // 2**32/4 == 1073741824
+            // For a square, it means that the max edge length is:
+            // sqrt(2**32/4) == 32768
+            var pixOrder = new Uint32Array(imageData.data.length / 4),
+                pixProp = new Uint32Array(imageData.data.length / 4),
+                prop;
+            var data = imageData.data;
+
+            for (var i = data.length - 4; i >= 0; i -= 4) {
+                pi = Math.round(i / 4);
+                prop = pixelFunc(data[i], data[i + 1], data[i + 2], data[i + 3]);
+                pixOrder[pi] = pi;
+                pixProp[pi] = prop;
+            }
+
+            pixOrder.sort = Array.prototype.sort.bind(pixOrder, function(p, q) {
+                return pixProp[p] - pixProp[q];
+            });
+
+            return pixOrder;
+        }
+
         function _sort(m, l) {
             var tmp, more = false;
             for (var i = 0, ii = m.length; i < ii; i++) {
                 // if i'm bigger than the element under me
-                if (m[i] > m[i+l]) {
+                if (m[i] > m[i + l]) {
                     // if i should be on a row bigger than the one i'm on currently
-                    if (Math.floor(m[i]/l) > Math.floor(i/l)) {
+                    if (Math.floor(m[i] / l) > Math.floor(i / l)) {
                         tmp = m[i];
-                        m[i] = m[i+l];
-                        m[i+l] = tmp;
+                        m[i] = m[i + l];
+                        m[i + l] = tmp;
                         more = true;
                     // if i belong to the row i'm on currently
-//                    } else {
-//                        tmp = m[i+l];
-//                        m.splice(i+l, 1);
-//                        m.splice(i, 0, tmp);
+                    // } else {
+                    //     tmp = m[i+l];
+                    //     m.splice(i+l, 1);
+                    //     m.splice(i, 0, tmp);
                     }
                 }
                 // if i'm bigger than the element right to me
-                else if (m[i] > m[i+1]) {
+                else if (m[i] > m[i + 1]) {
                     tmp = m[i];
-                    m[i] = m[i+1];
-                    m[i+1] = tmp;
+                    m[i] = m[i + 1];
+                    m[i + 1] = tmp;
                     more = true;
                 }
             }
@@ -126,11 +172,11 @@
         }
 
         function updateImgData(src, dest, pixorder) {
-            for (var i = pixorder.length-1; i >= 0; i--) {
-                dest.data[i*4] = src.data[pixorder[i]*4];
-                dest.data[i*4+1] = src.data[pixorder[i]*4+1];
-                dest.data[i*4+2] = src.data[pixorder[i]*4+2];
-                dest.data[i*4+3] = src.data[pixorder[i]*4+3];
+            for (var i = pixorder.length - 1; i >= 0; i--) {
+                dest.data[i * 4] = src.data[pixorder[i] * 4];
+                dest.data[i * 4 + 1] = src.data[pixorder[i] * 4 + 1];
+                dest.data[i * 4 + 2] = src.data[pixorder[i] * 4 + 2];
+                dest.data[i * 4 + 3] = src.data[pixorder[i] * 4 + 3];
             }
             return dest;
         }
