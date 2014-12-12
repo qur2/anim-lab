@@ -1,0 +1,88 @@
+body {
+    padding: 0;
+    background: url(http://placehold.it/2x4/555/999);
+}
+/* http://www.w3.org/Style/Examples/007/center.en.html#hv3 */
+section {
+    display: block;
+    padding: 1em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    perspective: 600px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 100;
+    font-size: 24pt;
+}
+
+#threed {
+    box-shadow: 0px 0px 69px -6px rgba(0,0,0,0.75);
+    background: #777;
+}
+
+/* http://css-tricks.com/almanac/properties/p/perspective/ */
+.tilt-7 {
+    transform: rotateX(10deg);
+}
+.tilt-1 {
+    transform: rotateX(-10deg);
+}
+.tilt-3 {
+    transform: rotateY(10deg);
+}
+.tilt-5 {
+    transform: rotateY(-10deg);
+}
+.tilt-8 {
+    transform: rotateX(10deg) rotateY(-10deg);
+}
+.tilt-6 {
+    transform: rotateX(10deg) rotateY(10deg);
+}
+.tilt-2 {
+    transform: rotateX(-10deg) rotateY(-10deg);
+}
+.tilt-0 {
+    transform: rotateX(-10deg) rotateY(10deg);
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+li {
+    
+}
+li:hover {
+    background: #bbb;
+}
+li a {
+    display: block;
+    text-decoration: none;
+    padding: .5em 3em .5em 1.25em;
+    position: relative;
+    color: #cb7344;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+}
+li:hover a:after {
+    content: "";
+    width:0px;
+    height:0px;
+    border-left:12px solid #cb7344;
+    border-right:12px solid transparent;
+    border-top:12px solid transparent;
+    border-bottom:12px solid transparent;
+    position: absolute;
+    right: .5em;
+    top: 50%;
+    margin-top: -12px
+}
+li a img {
+    width: 1em;
+    margin-right: .5em;
+    margin-left: 2px;
+}
