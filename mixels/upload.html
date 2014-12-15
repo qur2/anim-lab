@@ -77,13 +77,19 @@
             if (!_glitch.originalImageData) {
                 return false;
             }
-            while (iterCount--) {
-                _sort(_glitch.pixOrder, _glitch.originalImage.width);
-            }
-            updateImgData(_glitch.originalImageData, _glitch.workingImageData, _glitch.pixOrder);
-            var ctx = _glitch.originalCanvas.getContext('2d');
-            ctx.putImageData(_glitch.workingImageData, 0, 0);
-            preview.src = _glitch.originalCanvas.toDataURL();
+            var slave = new Worker('worker.js?w=' + _glitch.originalImage.width + '&i=' + iterCount);
+            // while (iterCount--) {
+            //     _sort(_glitch.pixOrder, _glitch.originalImage.width);
+            // }
+            slave.onmessage = function(evt) {
+                var pixOrder = new Uint32Array(evt.data);
+                updateImgData(_glitch.originalImageData, _glitch.workingImageData, pixOrder);
+                _glitch.pixOrder = pixOrder;
+                var ctx = _glitch.originalCanvas.getContext('2d');
+                ctx.putImageData(_glitch.workingImageData, 0, 0);
+                preview.src = _glitch.originalCanvas.toDataURL();
+            };
+            slave.postMessage(_glitch.pixOrder.buffer, [_glitch.pixOrder.buffer])
         }
     </script>
 
@@ -113,8 +119,8 @@
                 z = a;
                 a = 0;
             }
-            var i, r = [];
-            for (i = a; i < z; r.push(i), i++);
+            var i, r = new Uint32Array(z - a);
+            for (i = a; i < z; r[i] = i, i++);
             return r;
         }
 
