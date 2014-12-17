@@ -14,22 +14,36 @@
     </section>
 
     <script>
+        function _loadFile(file, readAs) {
+            if (!(readAs in FileReader.prototype)) {
+                readAs = FileReader.prototype.readAsDataURL;
+            }
+            var p = new Promise(function(resolve, reject) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    resolve(reader.result);
+                };
+                reader.onerror = function() {
+                    reject(reader.error);
+                };
+                readAs.call(reader, file);
+            });
+            return p;
+        }
+
         var _glitch = {};
         function loadFile(previewDest) {
             var preview = document.querySelector(previewDest);
             var file = this.files[0];
-            var reader = new FileReader();
-
-            reader.onloadend = function() {
-                // update preview
-                preview.src = reader.result;
-                // setup the _glitch context
-                _glitch = setupGlitchContext(reader.result);
-            };
 
             _glitch = {};
             if (file) {
-                reader.readAsDataURL(file);
+                _loadFile(file).then(function(dataURL) {
+                    // update preview
+                    preview.src = dataURL;
+                    // setup the _glitch context
+                    _glitch = setupGlitchContext(dataURL);
+                });
             } else {
                 preview.src = '';
             }
@@ -186,6 +200,9 @@
             }
             return dest;
         }
+    </script>
+    <script type="text/ko-tpl" id="file-loader">
+        <input type="file" onchange="loadFile.call(this, '#img-prvw')">
     </script>
 </body>
 </html>
