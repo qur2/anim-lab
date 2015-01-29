@@ -1,31 +1,33 @@
 window.onload = function () {
-var threed = document.getElementById("threed");
-threedHoverHandler = setClassFromMousePos.bind(threed);
-threed.addEventListener("mousemove", threedHoverHandler);
-threed.addEventListener("mouseout", setClass.bind(threed, 'tilt'));
+  var els = [document.getElementById("threed")];
+  // var els = threed.getElementsByTagName('a');
+  [].forEach.call(els, function (el) {
+    var pl = new PointLocator(el.parentNode.getBoundingClientRect())
+    el.addEventListener('mousemove', setClassFromMousePos.bind(el, pl));
+    el.addEventListener('mouseout', setClass.bind(el, 'tilt'));
+  });
 
-function setClass(className) {
-    this.className = className;
-}
+  function setClass(className) {
+    this.setAttribute('class', className);
+  }
 
-var rect = threed.parentNode.getBoundingClientRect()
-var pointLocator = mkPointLocator(rect);
-
-function setClassFromMousePos(e) {
-    var x = e.pageX - rect.left,
-        y = e.pageY - rect.top;
-    var loc = pointLocator(x, y);
+  function setClassFromMousePos(pointLocator, e) {
+    var x = e.pageX - pointLocator.rect.left,
+        y = e.pageY - pointLocator.rect.top;
+    var loc = pointLocator.track(x, y);
     setClass.call(this, 'tilt tilt-' + loc);
+  }
+
+  function PointLocator(rect, order) {
+    order || (order = 3);
+    this.rect = rect;
+    this.order = order;
+    this.dw = rect.width / order;
+    this.dh = rect.height / order;
+  }
+  PointLocator.prototype.track = function (x, y) {
+      var col = Math.floor(x / this.dw),
+          row = Math.floor(y / this.dh);
+      return row * this.order + col;
+  }
 }
-
-function mkPointLocator(rect) {
-    var order = 3;
-    var dw = rect.width / order,
-        dh = rect.height / order;
-
-    return function (x, y) {
-        var col = Math.floor(x / dw),
-            row = Math.floor(y / dh);
-        return row * order + col;
-    }
-}}
